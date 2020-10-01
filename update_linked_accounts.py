@@ -3,7 +3,6 @@ import json
 import os
 import requests
 import sys
-import requests
 
 from settings import *
 UPDATE_IZ = sys.argv[1]
