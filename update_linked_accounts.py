@@ -123,7 +123,8 @@ def main():
             no_pid_error += 1
         count_all_records += 1
     flush_print("TOTAL RECORDS: {}".format(count_all_records))
-    flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)))
+    flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)*100.0))
+    flush_print("success: {}".format(success))
     flush_print("updates required: {}".format(required))
     flush_print("updates not required: {}".format(not_required))
     flush_print("no pid errors: {}".format(no_pid_error))
