@@ -3,11 +3,18 @@ import json
 import os
 import requests
 import sys
+import requests
 
 from settings import *
 UPDATE_IZ = sys.argv[1]
 REPORT_FILE = sys.argv[2]
 UPDATE_IZ_KEY = IZ_READ_WRITE_KEYS[UPDATE_IZ]
+
+# We want to make certain to use HTTP keep-alive!!!
+requests_session = requests.Session()
+
+def flush_print(*args, **kwargs):
+  print(*args, file=sys.stdout, flush=True, **kwargs)
 
 def alma_get(resource, apikey, params=None, fmt='json'):
     '''
@@ -16,7 +23,7 @@ def alma_get(resource, apikey, params=None, fmt='json'):
     params = params or {}
     params['apikey'] = apikey
     params['format'] = fmt
-    r = requests.get(resource, params=params) 
+    r = requests_session.get(resource, params=params) 
     r.raise_for_status()
     return r
 
@@ -32,7 +39,8 @@ def alma_put(resource, apikey, payload=None, params=None, fmt='json'):
         'Content-type': 'application/{fmt}'.format(fmt=fmt),
         'Authorization' : 'apikey ' + apikey,
     }
-    r = requests.put(resource,
+    r = requests_session.put(
+                     resource,
                      headers=headers,
                      params=params,
                      data=payload)
@@ -64,6 +72,12 @@ def get_details_by_pid(home_pid, apikey):
 
 def main():
     count_all_records = 0
+    success = 0
+    required = 0
+    not_required = 0
+    no_pid_error = 0
+    update_failed_error = 0
+    general_error = 0
     for row in read_report_generator(REPORT_FILE):
         linked_pid = row['Primary Identifier']
         linked_email = row['Preferred Email']
@@ -79,10 +93,13 @@ def main():
                 expiry_date = get_details_by_pid(home_pid, LINKED_IZ_KEYS[home_iz])['expiry_date']
                 linked_account_details = get_details_by_pid(linked_pid, UPDATE_IZ_KEY)
                 if linked_account_details['expiry_date'] == expiry_date:
-                    print('No update required for {email}.'
+                    success += 1
+                    not_required += 1
+                    flush_print('No update required for {email}.'
                           ' Dates match at {date}'.format(email=linked_email, date=expiry_date))
                 else:
-                    print('Update required for {email}. '
+                    required += 1
+                    flush_print('Update required for {email}. '
                           'linked date is {ld}, '
                           'home date is {hd}'.format(email=linked_email,
                                                      ld=linked_account_details['expiry_date'],
@@ -93,17 +110,27 @@ def main():
                                                 UPDATE_IZ_KEY,
                                                 payload=json.dumps(linked_account_details))
                     if updated_account.status_code == 200:
-                        print("update successful")
+                        success += 1
+                        flush_print("update successful")
                     else:
-                        print("update failed for {}".format(linked_pid))
+                        update_failed_error += 1
+                        flush_print("update failed for {}".format(linked_pid))
             except Exception as e:
-                print(e.args[0])
+                general_error += 1
+                flush_print("Exception: {} - {}".format(e.args[0], row))
 
         else:
-            print("no pid for {}".format(linked_pid))
+            flush_print("no pid for {} - {}".format(linked_pid, row))
+            no_pid_error += 1
         count_all_records += 1
-
-
+    flush_print("TOTAL RECORDS: {}".format(count_all_records))
+    flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)))
+    flush_print("updates required: {}".format(required))
+    flush_print("updates not required: {}".format(not_required))
+    flush_print("no pid errors: {}".format(no_pid_error))
+    flush_print("update failed errors: {}".format(update_failed_error))
+    flush_print("general errors: {}".format(general_error))
+    
 
 if __name__ == '__main__':
     main()
