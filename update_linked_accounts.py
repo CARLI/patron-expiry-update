@@ -81,6 +81,8 @@ def main():
         linked_pid = row['Primary Identifier']
         linked_email = row['Preferred Email']
         home_iz = row['Linked From Institution Code']
+        if not linked_pid or not linked_email or not home_iz:
+            continue
         # request by email here
         try:
             home_pid = get_home_id_by_email(linked_email, home_iz)
