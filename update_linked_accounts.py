@@ -3,6 +3,7 @@ import json
 import os
 import requests
 import sys
+from requests.exceptions import HTTPError
 
 from settings import *
 UPDATE_IZ = sys.argv[1]
@@ -22,8 +23,17 @@ def alma_get(resource, apikey, params=None, fmt='json'):
     params = params or {}
     params['apikey'] = apikey
     params['format'] = fmt
-    r = requests_session.get(resource, params=params) 
-    r.raise_for_status()
+    try:
+      r = requests_session.get(resource, params=params) 
+      r.raise_for_status()
+    except HTTPError as http_err:
+        print('HTTP error occurred: ' + str(http_err))
+        print('Error response text: ' + r.text)
+        raise http_err
+    except Exception as err:
+        print('Other error occurred: ' + str(err))
+        print('Error response text ' + r.text)
+        raise err
     return r
 
 def alma_put(resource, apikey, payload=None, params=None, fmt='json'):
@@ -38,12 +48,21 @@ def alma_put(resource, apikey, payload=None, params=None, fmt='json'):
         'Content-type': 'application/{fmt}'.format(fmt=fmt),
         'Authorization' : 'apikey ' + apikey,
     }
-    r = requests_session.put(
+    try:
+      r = requests_session.put(
                      resource,
                      headers=headers,
                      params=params,
                      data=payload)
-    r.raise_for_status()
+      r.raise_for_status()
+    except HTTPError as http_err:
+        print('HTTP error occurred: ' + str(http_err))
+        print('Error response text ' + r.text)
+        raise http_err
+    except Exception as err:
+        print('Other error occurred: ' + str(err))
+        print('Error response text ' + r.text)
+        raise err
     return r
 
 def read_report_generator(report):
