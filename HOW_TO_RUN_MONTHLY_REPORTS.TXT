@@ -1,0 +1,8 @@
+1. edit run_batch.sh, and set RUN variable, e.g.,
+
+	RUN=20210302
+
+2. run:
+
+	sh run_batch.sh
+

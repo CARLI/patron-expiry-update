@@ -1,3 +1,4 @@
+import re
 import csv
 import json
 import os
@@ -67,7 +68,14 @@ def alma_put(resource, apikey, payload=None, params=None, fmt='json'):
 
 def read_report_generator(report):
     with open(report, encoding='utf-8-sig') as fh:
-        reader = csv.DictReader(fh, delimiter=',')
+        # is it tab-delimeted?
+        line = fh.readline(1024)
+        delim = ',' # default: csv
+        if re.search('\t', line):
+          delim = '\t'
+        fh.seek(0)
+
+        reader = csv.DictReader(fh, delimiter=delim)
         for row in reader:
             yield row
 
