@@ -185,9 +185,6 @@ def main():
             no_pid_error += 1
         count_all_records += 1
 
-        # REMOVE ME SOON
-        if success > 0:
-            exit(0)
 
     flush_print("TOTAL RECORDS: {}".format(count_all_records))
     flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)*100.0))
