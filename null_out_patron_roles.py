@@ -144,13 +144,13 @@ def main():
                         flush_print('BEFORE update:')
                         flush_print(json.dumps(linked_account_details))
                         del user_role['expiry_date']
-                        required += 1
                     else:
                         #flush_print('Does not have expiry_date set', json.dumps(user_role))
                         pass
                 user_roles.append(user_role)
 
             if patron_role_has_expiry:
+                required += 1
                 linked_account_details['user_role'] = user_roles
                 flush_print("\n")
                 flush_print('AFTER update:')
@@ -176,7 +176,7 @@ def main():
 
 
     flush_print("TOTAL RECORDS: {}".format(count_all_records))
-    flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)*100.0))
+    flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(required)*100.0))
     flush_print("success: {}".format(success))
     flush_print("updates required: {}".format(required))
     flush_print("updates not required: {}".format(not_required))
