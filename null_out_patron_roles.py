@@ -126,70 +126,60 @@ def main():
     success = 0
     required = 0
     not_required = 0
-    no_pid_error = 0
     update_failed_error = 0
     general_error = 0
     for row in read_report_generator(REPORT_FILE):
         linked_pid = row['Primary Identifier']
-        linked_email = row['Preferred Email']
-        home_iz = row['Linked From Institution Code']
-        if not linked_pid or not linked_email or not home_iz:
+        if not linked_pid:
             continue
-        # request by email here
+
         try:
-            home_pid = get_home_id_by_email(linked_email, home_iz)
-        except:
-            pass
-        if home_pid:
-            try:
-                patron_role_has_expiry = False
-                linked_account_details = get_details_by_pid(linked_pid, UPDATE_IZ_KEY)
-                user_roles = []
-                for user_role in linked_account_details['user_role']:
-                    if user_role['role_type']['value'] == "200":
-                        if 'expiry_date' in user_role:
-                            patron_role_has_expiry = True
-                            flush_print('BEFORE update:')
-                            flush_print(json.dumps(linked_account_details))
-                            del user_role['expiry_date']
-                            required += 1
-                        else:
-                            #flush_print('Does not have expiry_date set', json.dumps(user_role))
-                            pass
-                    user_roles.append(user_role)
-
-                if patron_role_has_expiry:
-                    linked_account_details['user_role'] = user_roles
-                    flush_print("\n")
-                    flush_print('AFTER update:')
-                    flush_print(json.dumps(linked_account_details))
-                    # post update
-                    updated_account = alma_put(ALMA_SERVER + USER_ROUTE.format(user_id=linked_pid),
-                                                UPDATE_IZ_KEY,
-                                                payload=json.dumps(linked_account_details))
-                    if updated_account.status_code == 200:
-                        success += 1
-                        flush_print("update successful")
+            patron_role_has_expiry = False
+            linked_account_details = get_details_by_pid(linked_pid, UPDATE_IZ_KEY)
+            user_roles = []
+            for user_role in linked_account_details['user_role']:
+                if user_role['role_type']['value'] == "200":
+                    if 'expiry_date' in user_role:
+                        patron_role_has_expiry = True
+                        flush_print('BEFORE update:')
+                        flush_print(json.dumps(linked_account_details))
+                        del user_role['expiry_date']
+                        required += 1
                     else:
-                        update_failed_error += 1
-                        flush_print("update failed for {}".format(linked_pid))
+                        #flush_print('Does not have expiry_date set', json.dumps(user_role))
+                        pass
+                user_roles.append(user_role)
+
+            if patron_role_has_expiry:
+                linked_account_details['user_role'] = user_roles
+                flush_print("\n")
+                flush_print('AFTER update:')
+                flush_print(json.dumps(linked_account_details))
+                # post update
+                updated_account = alma_put(ALMA_SERVER + USER_ROUTE.format(user_id=linked_pid),
+                                            UPDATE_IZ_KEY,
+                                            payload=json.dumps(linked_account_details))
+                if updated_account.status_code == 200:
+                    success += 1
+                    flush_print("update successful")
                 else:
-                    not_required += 1
+                    update_failed_error += 1
+                    flush_print("update failed for {}".format(linked_pid))
+            else:
+                not_required += 1
 
-            except Exception as e:
-                general_error += 1
-                flush_print("Exception: {} - {}".format(e.args[0], row))
+        except Exception as e:
+            general_error += 1
+            flush_print("Exception: {} - {}".format(e.args[0], row))
 
-        else:
-            flush_print("no pid for {} - {}".format(linked_pid, row))
-            no_pid_error += 1
         count_all_records += 1
 
 
     flush_print("TOTAL RECORDS: {}".format(count_all_records))
     flush_print("SUCCESS RATE: {:.0f}%".format(float(success)/float(count_all_records)*100.0))
     flush_print("success: {}".format(success))
-    flush_print("no pid errors: {}".format(no_pid_error))
+    flush_print("updates required: {}".format(required))
+    flush_print("updates not required: {}".format(not_required))
     flush_print("update failed errors: {}".format(update_failed_error))
     flush_print("general errors: {}".format(general_error))
     
