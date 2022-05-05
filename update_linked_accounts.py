@@ -130,7 +130,7 @@ def main():
     for row in read_report_generator(REPORT_FILE):
         linked_pid = row['Primary Identifier']
         linked_email = row['Preferred Email']
-        home_iz = row['Linked From Institution Code']
+        home_iz = row['User - Linked From Institution Code']
         if not linked_pid or not linked_email or not home_iz:
             continue
         # request by email here
