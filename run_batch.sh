@@ -36,4 +36,6 @@ echo "executing batch 4..."
 ./batch4.sh $today &
 wait
 
+sh ./send_stats_report.sh $today
+
 date
