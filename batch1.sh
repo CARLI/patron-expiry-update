@@ -1,6 +1,10 @@
 #!/bin/sh
 cd `dirname $0`
 
+log=`date +"log.batch1.%Y%m%d.%H%M"`
+exec >> $log
+exec 2>> $log
+
 RUN=somebogusdefault
 if [ $# -gt 0 ]; then
   RUN=$1
@@ -14,7 +18,8 @@ fi
 
 if [ ! -d linked_user_reports_${RUN}_output ]; then
   echo "Directory doesn't exist; creating linked_user_reports_${RUN}_output"
-  mkdir linked_user_reports_${RUN}_output
+  echo "Exiting..."
+  exit 1
 fi
 
 do_lib() {

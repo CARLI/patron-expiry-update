@@ -1,6 +1,10 @@
 #!/bin/sh
 cd `dirname $0`
 
+log=`date +"log.batch4.%Y%m%d.%H%M"`
+exec >> $log
+exec 2>> $log
+
 RUN=somebogusdefault
 if [ $# -gt 0 ]; then
   RUN=$1
@@ -14,7 +18,8 @@ fi
 
 if [ ! -d linked_user_reports_${RUN}_output ]; then
   echo "Directory doesn't exist; creating linked_user_reports_${RUN}_output"
-  mkdir linked_user_reports_${RUN}_output
+  echo "Exiting..."
+  exit 1
 fi
 
 do_lib() {
@@ -25,6 +30,7 @@ do_lib() {
 
   python3 update_linked_accounts.py ${lib_lc} ${RUN}/linked_users_in_IZ_activeloan_${RUN}_${lib}.csv | tee linked_user_reports_${RUN}_output/patron-expiry-update-output-${lib}.txt
 }
+
 
 do_lib IVC
 do_lib ISU

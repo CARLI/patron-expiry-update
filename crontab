@@ -1,0 +1,7 @@
+
+#--------  Monthly run of Update Linked Users expiration date (set up files)
+00 6 2 * * alma /home/carli/scripts/split_linked_users_for_exp_update.ksh 
+
+#--------  Monthly run of Update Linked Users expiration date (execute)
+00 7 2 * * alma /home/carli/scripts/patron-expiry-update/run_batch.sh
+

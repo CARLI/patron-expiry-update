@@ -1,6 +1,11 @@
 #!/bin/sh
 cd `dirname $0`
 
+log=`date +"log.run_batch.%Y%m%d.%H%M"`
+exec >> $log
+exec 2>> $log
+
+
 today=`date +"%Y%m%d"`
 flag="/home/carli/scripts/patron-expiry-update/$today/FINISHED"
 
