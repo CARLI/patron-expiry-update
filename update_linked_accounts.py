@@ -128,7 +128,7 @@ def main():
     update_failed_error = 0
     general_error = 0
     for row in read_report_generator(REPORT_FILE):
-        linked_pid = row['Primary Identifier']
+        linked_pid = row['User Primary Identifier']
         linked_email = row['Preferred Email']
         home_iz = row['User - Linked From Institution Code']
         if not linked_pid or not linked_email or not home_iz:
