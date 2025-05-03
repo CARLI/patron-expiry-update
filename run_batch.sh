@@ -5,14 +5,12 @@ log=`date +"log.run_batch.%Y%m%d.%H%M"`
 exec >> $log
 exec 2>> $log
 
-
 today=`date +"%Y%m%d"`
-flag="/home/carli/scripts/patron-expiry-update/$today/FINISHED"
-
 if [ $# -gt 0 ]; then
   today=$1
 fi
 
+flag="/home/carli/scripts/patron-expiry-update/$today/FINISHED"
 
 max=120
 cnt=0
